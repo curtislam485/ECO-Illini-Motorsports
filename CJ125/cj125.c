@@ -111,7 +111,7 @@ int calibrate(float UBAT) // UBAT from other function
     // - change over to PWM heater control mode
 
 	COM_SPI(INIT_REG1_WR||0x9D);	//entering calibration mode
-	if (UBAT<8.5) return -1;	// UBAT is less than 8.5V, hardware problem
+	if (UBAT < 8.5) return -1;	// UBAT is less than 8.5V, hardware problem
 	//two volts are equal to  136 from ADC but for convenience, lets stick to the float calculation :)
   	float pwm_factor=(2/UBAT)*255;
 
