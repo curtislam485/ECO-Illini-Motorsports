@@ -36,6 +36,15 @@ unsigned long delayTime;
 #define UA_PIN; // CJ125 UA
 // --------------------------------
 
+// PID Stuffffs
+
+double Input, Output, Setpoint;
+float kp=1;
+float ki=0.3; 
+float kd=0.1;
+
+
+
 // Function for transfering SPI data to the CJ125.
 uint16_t COM_SPI(uint16_t TX_data)
 {
@@ -61,3 +70,64 @@ uint16_t COM_SPI(uint16_t TX_data)
     return Response;
 }
 
+int check_id(void)
+{
+	unsigned char result = 0;
+	result = COM_SPI(IDENT_REG_RD);
+	if ((result&0xF8)!=0x60) return -1;
+	else return (result&0x07);
+}
+
+int check_stat(void)
+{
+	unsigned char result=0;
+    result = COM_SPI(DIAG_REG_RD);
+	result = result>>6;
+	switch (result)
+	{
+		case 0: return CJ125_E_SHORTCIRCUITGND; break;
+		case 1: return CJ125_E_NOPOWER; break;
+		case 2: return CJ125_E_SHORTCIRCUITBAT; break;
+		case 3: return CJ125_OK; break;
+	}	
+	return -1;
+}
+
+float get_bat(void)
+{
+//   UBAT = float(analogRead(UB_ANALOG_INPUT_PIN)); ****
+  UBAT = (UBAT * 15) / 1023;
+  return UBAT;
+}
+
+int calibrate(float UBAT) // UBAT from other function
+{
+    //There is a risk of water condensed into the O2 sensor, so the proper pre-heating procedure must be maintainted.
+    //From what Bosch says, it folllows:
+    // - enter the CJ125 calibration mode
+    // - apply 2V to the heater for 4 seconds
+    // - apply 8.5V to the heater, and within each consecutive second increase by 0.4V up to the battery voltage
+    // - store UR value as a PWM reference point, quit CJ125 calibration
+    // - change over to PWM heater control mode
+
+	COM_SPI(INIT_REG1_WR||0x9D);	//entering calibration mode
+	if (UBAT<8.5) return -1;	// UBAT is less than 8.5V, hardware problem
+	//two volts are equal to  136 from ADC but for convenience, lets stick to the float calculation :)
+  	float pwm_factor=(2/UBAT)*255;
+
+	// analogWrite(HTR_PIN, byte(pwm_factor));
+
+	delay(1000); delay(1000); delay (1000); delay (1000);
+	float UHTR = 8.5;
+	while (UHTR < UBAT)
+	{	
+        pwm_factor = (UHTR / UBAT) * 255;	//o2 sensor preheating sequence, starting from 8.5V and increasing 0.4V per second
+		UHTR+=0.4;
+		delay(1000);
+		// analogWrite(HTR_PIN,byte(pwm_factor)); ****
+	}
+	// analogWrite(HTR_PIN,0);			//end of pre-heating, power off the heater **
+	// Setpoint = analogRead(UR_PIN); **
+	COM_SPI(INIT_REG1_WR||0x89);	//quit the calibration mode
+	return 0;
+}
