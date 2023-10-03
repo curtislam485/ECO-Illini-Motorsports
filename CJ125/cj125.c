@@ -70,6 +70,13 @@ uint16_t COM_SPI(uint16_t TX_data)
     return Response;
 }
 
+float get_bat(void)
+{
+//   UBAT = float(analogRead(UB_ANALOG_INPUT_PIN)); ****
+  UBAT = (UBAT * 15) / 1023;
+  return UBAT;
+}
+
 int check_id(void)
 {
 	unsigned char result = 0;
@@ -93,13 +100,6 @@ int check_stat(void)
 	return -1;
 }
 
-float get_bat(void)
-{
-//   UBAT = float(analogRead(UB_ANALOG_INPUT_PIN)); ****
-  UBAT = (UBAT * 15) / 1023;
-  return UBAT;
-}
-
 int calibrate(float UBAT) // UBAT from other function
 {
     //There is a risk of water condensed into the O2 sensor, so the proper pre-heating procedure must be maintainted.
@@ -110,12 +110,12 @@ int calibrate(float UBAT) // UBAT from other function
     // - store UR value as a PWM reference point, quit CJ125 calibration
     // - change over to PWM heater control mode
 
-	COM_SPI(INIT_REG1_WR||0x9D);	//entering calibration mode
+	COM_SPI(INIT_REG1_WR|0x9D);	//entering calibration mode
 	if (UBAT < 8.5) return -1;	// UBAT is less than 8.5V, hardware problem
 	//two volts are equal to  136 from ADC but for convenience, lets stick to the float calculation :)
   	float pwm_factor=(2/UBAT)*255;
 
-	// analogWrite(HTR_PIN, byte(pwm_factor));
+	// analogWrite(HTR_PIN, byte(pwm_factor)); ***
 
 	delay(1000); delay(1000); delay (1000); delay (1000);
 	float UHTR = 8.5;
@@ -128,6 +128,41 @@ int calibrate(float UBAT) // UBAT from other function
 	}
 	// analogWrite(HTR_PIN,0);			//end of pre-heating, power off the heater **
 	// Setpoint = analogRead(UR_PIN); **
-	COM_SPI(INIT_REG1_WR||0x89);	//quit the calibration mode
+	COM_SPI(INIT_REG1_WR|0x89);	//quit the calibration mode
 	return 0;
 }
+
+void run(void)
+{
+	// Input=analogRead(UR_PIN); ***
+	// pid.Compute(); make a pid function for this
+	// analogWrite(HTR_PIN,byte(Output)); ***
+}
+
+float get_oxygen(void) 
+{
+  uint16_t value;
+//   value=analogRead(UA_PIN); ***
+    //Declare and set default return value.
+
+
+    // convert nernst voltage to oxygen concentration and just return that value
+
+    // idt we need this since its afr stuff
+    // float afr = 0;
+
+    // //Validate ADC range for lookup table.
+    // if (value > 854) value = 854;
+    
+    // if (value >= 307 && value <= 854) {
+    //   afr = pgm_read_float_near(afr_table + (value - 307));
+    // }
+    
+    //Return value.
+    // return afr;
+    // ---------------------------
+
+    
+}
+
+
