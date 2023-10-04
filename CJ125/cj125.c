@@ -60,7 +60,7 @@ uint16_t COM_SPI(uint16_t TX_data)
     uint8_t highByte;
     HAL_SPI_Receive(&hspi, &dataArray[0], highByte, sizeOf(highByte), HAL_MAX_DELAY);
     uint8_t lowByte;
-    HAL_SPI_tReceive(&hspi, &dataArray[1], lowByte, sizeOf(lowByte), HAL_MAX_DELAY);
+    HAL_SPI_Receive(&hspi, &dataArray[1], lowByte, sizeOf(lowByte), HAL_MAX_DELAY);
 
     // Set chip select pin high, chip not in use.
     HAL_GPIO_WritePin(CS_BANK, CS_PIN, SET)
