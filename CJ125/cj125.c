@@ -31,10 +31,12 @@ unsigned long delayTime;
 // Set these as constants for where you plug them in
 #define CS_PIN; // SPI CJ125 Chip select line (NSS)
 #define CS_BANK;
-#define HTR_PIN; // PWM output for LSU heater
-#define UR_PIN; // CJ125 UR
-#define UA_PIN; // CJ125 UA
+// #define HTR_PIN; // PWM output for LSU heater
+// #define UR_PIN; // CJ125 UR
+// #define UA_PIN; // CJ125 UA
 // --------------------------------
+
+static SPI_HandleTypeDef *hspi; 
 
 // PID Stuffffs
 
@@ -43,6 +45,11 @@ float kp=1;
 float ki=0.3; 
 float kd=0.1;
 
+
+// initialize SPI
+void initSPI(){
+    HAL_SPI_Init(hspi);
+}
 
 
 // Function for transfering SPI data to the CJ125.
@@ -58,9 +65,9 @@ uint16_t COM_SPI(uint16_t TX_data)
 
     // Transmit and receive.
     uint8_t highByte;
-    HAL_SPI_Receive(&hspi, &dataArray[0], highByte, sizeOf(highByte), HAL_MAX_DELAY);
+    HAL_SPI_Receive(hspi, &dataArray[0], highByte, sizeOf(highByte), HAL_MAX_DELAY);
     uint8_t lowByte;
-    HAL_SPI_Receive(&hspi, &dataArray[1], lowByte, sizeOf(lowByte), HAL_MAX_DELAY);
+    HAL_SPI_Receive(hspi, &dataArray[1], lowByte, sizeOf(lowByte), HAL_MAX_DELAY);
 
     // Set chip select pin high, chip not in use.
     HAL_GPIO_WritePin(CS_BANK, CS_PIN, SET)
@@ -73,8 +80,8 @@ uint16_t COM_SPI(uint16_t TX_data)
 float get_bat(void)
 {
 //   UBAT = float(analogRead(UB_ANALOG_INPUT_PIN)); ****
-  UBAT = (UBAT * 15) / 1023;
-  return UBAT;
+    UBAT = (UBAT * 15) / 1023;
+    return UBAT;
 }
 
 int check_id(void)
@@ -100,7 +107,7 @@ int check_stat(void)
 	return -1;
 }
 
-int calibrate(float UBAT) // UBAT from other function
+int calibrate(float UBAT, ADC_HandleTypeDef &UR_PIN) // UBAT from other function
 {
     //There is a risk of water condensed into the O2 sensor, so the proper pre-heating procedure must be maintainted.
     //From what Bosch says, it folllows:
@@ -117,6 +124,8 @@ int calibrate(float UBAT) // UBAT from other function
 
 	// analogWrite(HTR_PIN, byte(pwm_factor)); ***
 
+
+
 	delay(1000); delay(1000); delay (1000); delay (1000);
 	float UHTR = 8.5;
 	while (UHTR < UBAT)
@@ -127,29 +136,28 @@ int calibrate(float UBAT) // UBAT from other function
 		// analogWrite(HTR_PIN,byte(pwm_factor)); ****
 	}
 	// analogWrite(HTR_PIN,0);			//end of pre-heating, power off the heater **
-	// Setpoint = analogRead(UR_PIN); **
+	Setpoint = HAL_ADC_GetValue(UR_PIN); //UR_PIN
 	COM_SPI(INIT_REG1_WR|0x89);	//quit the calibration mode
 	return 0;
 }
 
-void run(void)
+void run(ADC_HandleTypeDef &UR_PIN, DAC_HandleTypeDef &HTR_PIN)
 {
-	// Input=analogRead(UR_PIN); ***
+	Input = HAL_ADC_GetValue(UR_PIN); // UR_PIN
 	// pid.Compute(); make a pid function for this
 	// analogWrite(HTR_PIN,byte(Output)); ***
+    HAL_DAC_SetValue(HTR_PIN, , DAC_ALIGN_12B_R, ); // find channel for htr_pin, output from pid (can go up to 32 bits of resolution)
 }
 
-float get_oxygen(void) 
+float get_oxygen(ADC_HandleTypeDef &UA_PIN) 
 {
   uint16_t value;
-//   value=analogRead(UA_PIN); ***
+  value = HAL_ADC_GetValue(UA_PIN); *** // UA_PIN
     //Declare and set default return value.
 
 
     // convert nernst voltage to oxygen concentration and just return that value
 
-    // idt we need this since its afr stuff
-    // float afr = 0;
 
     // //Validate ADC range for lookup table.
     // if (value > 854) value = 854;
