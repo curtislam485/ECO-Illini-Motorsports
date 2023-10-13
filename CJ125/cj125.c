@@ -22,7 +22,7 @@
 
 /* CJ125 */
 
-#define UB_ANALOG_INPUT_PIN A2 // analog read this pin to get battery
+// #define UB_ANALOG_INPUT_PIN A2 // analog read this pin to get battery
 uint16_t cj_status;
 float oxy;
 float UBAT;
@@ -77,9 +77,10 @@ uint16_t COM_SPI(uint16_t TX_data)
     return Response;
 }
 
-float get_bat(void)
+float get_bat(ADC_HandleTypeDef &UR_PIN)
 {
-//   UBAT = float(analogRead(UB_ANALOG_INPUT_PIN)); ****
+    // UBAT = float(analogRead(UB_ANALOG_INPUT_PIN) ); ****
+    UBAT = float(HAL_ADC_GetValue(UR_PIN))
     UBAT = (UBAT * 15) / 1023;
     return UBAT;
 }
@@ -120,9 +121,11 @@ int calibrate(float UBAT, ADC_HandleTypeDef &UR_PIN) // UBAT from other function
 	COM_SPI(INIT_REG1_WR|0x9D);	//entering calibration mode
 	if (UBAT < 8.5) return -1;	// UBAT is less than 8.5V, hardware problem
 	//two volts are equal to  136 from ADC but for convenience, lets stick to the float calculation :)
-  	float pwm_factor=(2/UBAT)*255;
+  	
+    float pwm_factor=(2/UBAT)*255; // convert this into 4 bytes to put into SETVALUE
 
 	// analogWrite(HTR_PIN, byte(pwm_factor)); ***
+    HAL_DAC_SetValue(HTR_PIN, DAC_CHANNEL_1, DAC_ALIGN_12B_R, ); // find channel for htr_pin, output from pid (can go up to 32 bits of resolution)
 
 
 
@@ -134,8 +137,10 @@ int calibrate(float UBAT, ADC_HandleTypeDef &UR_PIN) // UBAT from other function
 		UHTR+=0.4;
 		delay(1000);
 		// analogWrite(HTR_PIN,byte(pwm_factor)); ****
+        HAL_DAC_SetValue(HTR_PIN, DAC_CHANNEL_1, DAC_ALIGN_12B_R, ); // find channel for htr_pin, output from pid (can go up to 32 bits of resolution)
 	}
 	// analogWrite(HTR_PIN,0);			//end of pre-heating, power off the heater **
+    HAL_DAC_SetValue(HTR_PIN, DAC_CHANNEL_1, DAC_ALIGN_12B_R, RESET); // find channel for htr_pin, output from pid (can go up to 32 bits of resolution)
 	Setpoint = HAL_ADC_GetValue(UR_PIN); //UR_PIN
 	COM_SPI(INIT_REG1_WR|0x89);	//quit the calibration mode
 	return 0;
@@ -146,13 +151,13 @@ void run(ADC_HandleTypeDef &UR_PIN, DAC_HandleTypeDef &HTR_PIN)
 	Input = HAL_ADC_GetValue(UR_PIN); // UR_PIN
 	// pid.Compute(); make a pid function for this
 	// analogWrite(HTR_PIN,byte(Output)); ***
-    HAL_DAC_SetValue(HTR_PIN, , DAC_ALIGN_12B_R, ); // find channel for htr_pin, output from pid (can go up to 32 bits of resolution)
+    HAL_DAC_SetValue(HTR_PIN, DAC_CHANNEL_1, DAC_ALIGN_12B_R, ); // find channel for htr_pin, output from pid (can go up to 32 bits of resolution)
 }
 
 float get_oxygen(ADC_HandleTypeDef &UA_PIN) 
 {
-  uint16_t value;
-  value = HAL_ADC_GetValue(UA_PIN); *** // UA_PIN
+    uint16_t value;
+    value = HAL_ADC_GetValue(UA_PIN);  // UA_PIN
     //Declare and set default return value.
 
 
