@@ -125,7 +125,7 @@ int calibrate(float UBAT, ADC_HandleTypeDef &UR_PIN) // UBAT from other function
     float pwm_factor=(2/UBAT)*255; // convert this into 4 bytes to put into SETVALUE
 
 	// analogWrite(HTR_PIN, byte(pwm_factor)); ***
-    HAL_DAC_SetValue(HTR_PIN, DAC_CHANNEL_1, DAC_ALIGN_12B_R, ); // find channel for htr_pin, output from pid (can go up to 32 bits of resolution)
+    HAL_DAC_SetValue(HTR_PIN, DAC_CHANNEL_1, DAC_ALIGN_12B_R, pwm_factor); // find channel for htr_pin, output from pid (can go up to 32 bits of resolution)
 
 
 
