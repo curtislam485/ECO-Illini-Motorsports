@@ -1,4 +1,4 @@
-22208845318917745
+22210543835385585
 Audio_Module
 Reverb_BTDR-1H
 Digital Reverberation Unit, http://www.belton.co.kr/inc/downfile.php?seq=17&file=pdf (footprint from http://www.uk-electronic.de/PDF/BTDR-1.pdf)
@@ -2435,6 +2435,13 @@ speaker CUI
 0
 2
 2
+CJ125 Circuit Data
+CON_1053101108
+
+1053101108 
+0
+8
+8
 CJ125 Circuit Data
 SO24W
 <b>SMALL OUTLINE INTEGRATED CIRCUIT</b><p>wide body 7.5 mm/JEDEC MO-119AA

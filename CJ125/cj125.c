@@ -125,7 +125,7 @@ int calibrate(float UBAT, ADC_HandleTypeDef &UR_PIN) // UBAT from other function
     float pwm_factor=(2/UBAT)*255; // convert this into 4 bytes to put into SETVALUE
 
 	// analogWrite(HTR_PIN, byte(pwm_factor)); ***
-    HAL_DAC_SetValue(HTR_PIN, DAC_CHANNEL_1, DAC_ALIGN_12B_R, pwm_factor); // find channel for htr_pin, output from pid (can go up to 32 bits of resolution)
+    HAL_DAC_SetValue(HTR_PIN, DAC_CHANNEL_1, DAC_ALIGN_12B_R, pwm_factor); 
 
 
 
@@ -137,10 +137,10 @@ int calibrate(float UBAT, ADC_HandleTypeDef &UR_PIN) // UBAT from other function
 		UHTR+=0.4;
 		delay(1000);
 		// analogWrite(HTR_PIN,byte(pwm_factor)); ****
-        HAL_DAC_SetValue(HTR_PIN, DAC_CHANNEL_1, DAC_ALIGN_12B_R, ); // find channel for htr_pin, output from pid (can go up to 32 bits of resolution)
+        HAL_DAC_SetValue(HTR_PIN, DAC_CHANNEL_1, DAC_ALIGN_12B_R, pwm_factor); 
 	}
 	// analogWrite(HTR_PIN,0);			//end of pre-heating, power off the heater **
-    HAL_DAC_SetValue(HTR_PIN, DAC_CHANNEL_1, DAC_ALIGN_12B_R, RESET); // find channel for htr_pin, output from pid (can go up to 32 bits of resolution)
+    HAL_DAC_SetValue(HTR_PIN, DAC_CHANNEL_1, DAC_ALIGN_12B_R, RESET); 
 	Setpoint = HAL_ADC_GetValue(UR_PIN); //UR_PIN
 	COM_SPI(INIT_REG1_WR|0x89);	//quit the calibration mode
 	return 0;
