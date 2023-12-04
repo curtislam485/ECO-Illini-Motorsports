@@ -1,0 +1,9 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP SI2302CDS-T1-BE3
+D MOSFET N-CHANNEL 20-V (D-S)
+K
+F https://www.vishay.com/docs/68645/si2302cds.pdf
+$ENDCMP
+#
+#End Doc Library
